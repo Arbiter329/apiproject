@@ -5,17 +5,60 @@ $(document).ready(function () {
         gameData = document.getElementById("gameData"),
         searchGame = document.getElementById("searchGame"),
         gamesUri = "https://igdbcom-internet-game-database-v1.p.mashape.com/games/?fields=*&limit=10&offset={{page}}&order=release_dates.date%3Adesc&search=",
+        youtubeTemp = "<iframe class=\"embed-responsive-item\" src=\"https://www.youtube.com/embed/{{youtubeID}}\" frameborder=\"0\" allowfullscreen></iframe>";
         gameDB = {};
     var eventHandler = function eventHandler(evnt){
         gameData.innerHTML = "";
         var gameId = evnt.currentTarget.id,
             game = gameDB[gameId],
             head3 = document.createElement("h3"),
-            sumDiv = document.createElement("div");
-            sumDiv.innerHTML = game.summary;
+            sumDiv = document.createElement("div"),
+            coverImg = document.createElement("img"),
+            linkButton = document.createElement("a"),
+            releaseDates = game.release_dates,
+            gameVideos = game.videos;
+
+            sumDiv.innerHTML = game.summary || "No Summary Found.";
             head3.innerText = game.name;
+            linkButton.href = game.url;
+            linkButton.innerText = "IGDB Page";
+            linkButton.classList.add("btn");
+            linkButton.classList.add("btn-success");
+
+            if(game.cover){
+                coverImg.src = game.cover.url;
+            };
+
+            if(releaseDates){
+                var dateHead = document.createElement("h3");
+                dateHead.innerText = "Release Date(s):";
+                sumDiv.appendChild(dateHead);
+                 releaseDates.forEach(function(date){
+                var head4 = document.createElement("h4");
+
+                head4.innerText = date.human;
+                sumDiv.appendChild(head4);
+                });
+            };
+
+            if(gameVideos){
+                gameVideos.forEach(function(video){
+                    var videoDiv = document.createElement("div");
+
+                    videoDiv.classList.add("embed-responsive");
+                    videoDiv.classList.add("embed-responsive-16by9");
+                    videoDiv.innerHTML = youtubeTemp.replace("{{youtubeID}}", video.video_id);
+
+                    sumDiv.appendChild(videoDiv);
+                });
+            }
+
+
+           
             gameData.appendChild(head3);
             gameData.appendChild(sumDiv);
+            gameData.appendChild(coverImg);
+            gameData.appendChild(linkButton);
     };
     gameButton.addEventListener("click", function () {
         var uri = gamesUri.replace("{{page}}", pageNum*10);
@@ -30,6 +73,7 @@ $(document).ready(function () {
                 gDat.forEach(function(item){
                     gameDB[item.id] = item;
                     var listItem = document.createElement("li");
+
                     listItem.classList.add("list-group-item");
                     listItem.id = item.id;
                     listItem.innerText = item.name;
