@@ -2,6 +2,8 @@ $(document).ready(function () {
     var gameList = document.getElementById("gameList"),
         gameButton = document.getElementById("gameButton"),
         pageNum = 0,
+        prevButton = document.getElementById("previous"),
+        nextButton = document.getElementById("next"),
         gameData = document.getElementById("gameData"),
         searchGame = document.getElementById("searchGame"),
         gamesUri = "https://igdbcom-internet-game-database-v1.p.mashape.com/games/?fields=*&limit=10&offset={{page}}&order=release_dates.date%3Adesc&search=",
@@ -60,7 +62,8 @@ $(document).ready(function () {
             gameData.appendChild(coverImg);
             gameData.appendChild(linkButton);
     };
-    gameButton.addEventListener("click", function () {
+
+    var searchFunction = function searchFunction(){
         var uri = gamesUri.replace("{{page}}", pageNum*10);
         $.ajax({
             method: "GET",
@@ -69,7 +72,7 @@ $(document).ready(function () {
         })
             .done(function (gDat) {
                 gameList.innerHTML = "";
-                console.log(JSON.stringify(gDat));
+                gameDB = {};
                 gDat.forEach(function(item){
                     gameDB[item.id] = item;
                     var listItem = document.createElement("li");
@@ -81,5 +84,20 @@ $(document).ready(function () {
                     gameList.appendChild(listItem);
                 });
             });
+    }
+
+    gameButton.addEventListener("click", searchFunction);
+    nextButton.addEventListener("click", function(){
+        gameCount = Object.keys(gameDB).length;
+        if(gameCount == 10){
+            pageNum++;
+            searchFunction();
+        };
+    });
+    prevButton.addEventListener("click", function(){
+        if(pageNum > 0){
+            pageNum--;
+            searchFunction();
+        };
     });
 });
